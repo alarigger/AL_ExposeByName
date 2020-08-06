@@ -4,7 +4,7 @@
 
 Alexandre Cormier 
 
-04/08/2020
+06/08/2020
 
 www.alarigger.com
 
@@ -33,7 +33,9 @@ var POSE_NAME = "00";
 var SELECTED_POSE ="00"
 
 
-var numSelLayers = Timeline.numLayerSel; 
+var numSelLayers = Timeline.numLayerSel;
+
+var SUBLIST = [];
 
 
 /**************** E X E C U T I O N */
@@ -46,7 +48,8 @@ var numSelLayers = Timeline.numLayerSel;
 
 scene.beginUndoRedoAccum("AL_ExposeByName");
 
-
+		 
+createUniqueSubList()
 
 inputDialog()
 
@@ -85,7 +88,7 @@ function inputDialog() {
 
 
 
-	var nameInput = new LineEdit();
+	/*var nameInput = new LineEdit();
 
 	nameInput.label = "Sub name : ";
 
@@ -93,7 +96,19 @@ function inputDialog() {
 
 	nameInput.minimum = 1;
 
-	d.add( nameInput );
+	d.add( nameInput );*/
+	
+	
+	
+	var subBox = new ComboBox();
+	
+	subBox.label = "Available subs : ";
+	
+	subBox.editable = true;
+	
+	subBox.itemList = SUBLIST;
+	
+	d.add( subBox );
 
 
 
@@ -102,11 +117,9 @@ function inputDialog() {
 	if ( d.exec() ){
 
 
-	 POSE_NAME = nameInput.text;
-	 
-	 selectPose()
-
-	 Expose_sub()
+		 SELECTED_POSE = subBox.currentItem;
+		 
+		 Expose_sub()
 
 
 	}
@@ -121,12 +134,75 @@ function inputDialog() {
 /*    S E L E C T   A N D   E X P O S E */
 
 
-function selectPose(){
 
-	 SELECTED_POSE = POSE_NAME
+function createUniqueSubList (){
+
+	for ( var i = 0; i < numSelLayers; i++ ){
+
+			if ( Timeline.selIsColumn(i)){
+
+
+					var currentColumn = Timeline.selToColumn(i);
+
+					MessageLog.trace(currentColumn);
+
+					
+					
+					MessageLog.trace(SELECTED_POSE);
+					
+					var sub_timing = column.getDrawingTimings(currentColumn);
+					
+					for (var s = 0 ; s < sub_timing.length ; s++){
+						
+						var current_sub = sub_timing[s];
+						var current_sub_name = current_sub;
+						//var current_sub_name = extract_subname(current_sub);
+						
+						if(SUBLIST.indexOf(current_sub_name)==-1){
+							
+							SUBLIST.push(current_sub_name);
+								
+						}
+						
+					}
+
+				}
+
+
+		}		
+		
+		MessageLog.trace(SUBLIST);
 	
 }
 
+function extract_subname(big_name){
+	
+	MessageLog.trace("big_name " +big_name);
+	
+	var split0=big_name.split('-');
+	
+	var   extracted_subname = "nope"
+
+	var split1=split0[1];
+	
+	if(split1 != ""){
+
+		var split2 = split1.split('.')
+		
+		if(split2 != ""){
+			extracted_subname= split2[0];	
+			
+			MessageLog.trace(extracted_subname);
+			
+							
+		}
+		
+	
+		
+	}
+	return extracted_subname;
+	
+}
 
 
 function Expose_sub(){
@@ -159,17 +235,6 @@ function Expose_sub(){
 					column.setEntry(currentColumn,1,curFrame,SELECTED_POSE);
 						
 				}
-
-				/*if (column.type(currentColumn) == "DRAWING"){
-					
-					var DrawingName =column.getDrawingName(currentColumn,curFrame)
-
-							var split1;
-							var split1=DrawingName.split('-')[1];
-
-					}	
-					
-				}*/
 
 
 			}
